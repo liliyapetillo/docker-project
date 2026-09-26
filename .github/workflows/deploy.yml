@@ -105,3 +105,11 @@ jobs:
           service: ${{ secrets.ECS_SERVICE_PROD }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install boto3
+      - name: Post-deploy health check
+        env:
+          ECS_SERVICE_PROD: ${{ secrets.ECS_SERVICE_PROD }}
+        run: python scripts/health_check.py
