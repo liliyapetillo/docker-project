@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify
 import os, socket
 import boto3
 from botocore.config import Config
@@ -173,12 +173,30 @@ def home():
       <a href="https://github.com/liliyapetillo/portfolio" target="_blank">GitHub</a>
     </div>
 
-    <form class="thumbs-form" method="post" action="/like">
-      <button type="submit" class="thumbs">👍 {count}</button>
-    </form>
+    <div class="thumbs-form">
+      <button type="button" class="thumbs" id="thumbs-btn" onclick="likeIt()">👍 <span id="count">{count}</span></button>
+    </div>
 
     <div class="meta">Environment: {env.upper()} · Commit: {version[:7]} · Container: {hostname}</div>
   </div>
+  <script>
+    async function likeIt() {{
+      const btn = document.getElementById('thumbs-btn');
+      const countEl = document.getElementById('count');
+      btn.disabled = true;
+      try {{
+        const res = await fetch('/like', {{ method: 'POST' }});
+        if (res.ok) {{
+          const data = await res.json();
+          countEl.textContent = data.count;
+        }}
+      }} catch (err) {{
+        console.error('Failed to update counter', err);
+      }} finally {{
+        btn.disabled = false;
+      }}
+    }}
+  </script>
 </body>
 </html>
 """
@@ -186,15 +204,17 @@ def home():
 @app.route("/like", methods=["POST"])
 def like():
     try:
-        table.update_item(
+        response = table.update_item(
             Key={"id": "counter"},
             UpdateExpression="ADD #c :incr",
             ExpressionAttributeNames={"#c": "count"},
             ExpressionAttributeValues={":incr": 1},
+            ReturnValues="UPDATED_NEW",
         )
+        return jsonify({"count": int(response["Attributes"]["count"])})
     except (ClientError, BotoCoreError) as e:
         print(f"Failed to update counter: {e}")
-    return redirect("/")
+        return jsonify({"error": "Failed to update counter"}), 502
 
 @app.route("/health")
 def health():
