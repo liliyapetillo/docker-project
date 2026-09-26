@@ -27,8 +27,6 @@ jobs:
   build-push:
     needs: test
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.build.outputs.image }}
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -37,12 +35,10 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - uses: aws-actions/amazon-ecr-login@v2
         id: ecr-login
-      - id: build
-        run: |
+      - run: |
           IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
-          echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
   deploy-staging:
     needs: build-push
@@ -53,6 +49,9 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr-login
+      - run: echo "IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> "$GITHUB_ENV"
       - uses: aws-actions/amazon-ecs-render-task-definition@v1
         id: render
         with:
@@ -60,7 +59,7 @@ jobs:
           container-name: myapp
           # This step only produces an updated task definition, it does not deploy.
           # The next step (deploy-task-definition) is what actually registers and deploys it.
-          image: ${{ needs.build-push.outputs.image }}
+          image: ${{ env.IMAGE_URI }}
           environment-variables: |
             APP_VERSION=${{ github.sha }}
       - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
@@ -80,12 +79,15 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr-login
+      - run: echo "IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> "$GITHUB_ENV"
       - uses: aws-actions/amazon-ecs-render-task-definition@v1
         id: render
         with:
           task-definition-family: myapp-task
           container-name: myapp
-          image: ${{ needs.build-push.outputs.image }}
+          image: ${{ env.IMAGE_URI }}
           environment-variables: |
             APP_VERSION=${{ github.sha }}
       - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
