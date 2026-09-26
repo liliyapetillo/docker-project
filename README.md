@@ -12,17 +12,15 @@ just scaled down to one developer and one small app.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    Dev[Push to main] --> GH[GitHub]
-    GH --> Test["Actions: test\n(pytest)"]
-    Test --> Build["Actions: build-push\n(docker build & push)"]
-    Build --> ECR[(Amazon ECR)]
-    ECR --> Staging["Actions: deploy-staging\n(ECS Fargate)"]
-    Staging --> Gate{{Manual approval}}
-    Gate --> Prod["Actions: deploy-prod\n(ECS Fargate)"]
-    Staging -. reads/writes .-> DDB[(DynamoDB)]
-    Prod -. reads/writes .-> DDB
+```
+push to main (GitHub)
+  -> test             run pytest
+  -> build-push       build the image, push it to ECR
+  -> deploy-staging   deploy to ECS Fargate (staging)
+  -> manual approval  a person reviews staging
+  -> deploy-prod      deploy to ECS Fargate (prod)
+
+The app stores its thumbs-up counter in DynamoDB.
 ```
 
 A push to `main` runs four jobs in sequence: `test` → `build-push` →

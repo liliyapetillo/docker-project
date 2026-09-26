@@ -62,6 +62,7 @@ jobs:
           image: ${{ env.IMAGE_URI }}
           environment-variables: |
             APP_VERSION=${{ github.sha }}
+            APP_ENV=staging
       - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render.outputs.task-definition }}
@@ -100,6 +101,7 @@ jobs:
           image: ${{ env.IMAGE_URI }}
           environment-variables: |
             APP_VERSION=${{ github.sha }}
+            APP_ENV=production
       - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render.outputs.task-definition }}
