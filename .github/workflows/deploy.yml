@@ -67,6 +67,7 @@ jobs:
           task-definition: ${{ steps.render.outputs.task-definition }}
           service: ${{ secrets.ECS_SERVICE_STAGING }}
           cluster: ${{ env.ECS_CLUSTER }}
+          desired-count: 1
           wait-for-service-stability: true
       - name: Look up staging task's public IP and print a link
         run: |
@@ -104,6 +105,7 @@ jobs:
           task-definition: ${{ steps.render.outputs.task-definition }}
           service: ${{ secrets.ECS_SERVICE_PROD }}
           cluster: ${{ env.ECS_CLUSTER }}
+          desired-count: 1
           wait-for-service-stability: true
       - uses: actions/setup-python@v7
         with:
