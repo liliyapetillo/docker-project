@@ -12,16 +12,7 @@ just scaled down to one developer and one small app.
 
 ## Architecture
 
-```
-push to main (GitHub)
-  -> test             run pytest
-  -> build-push       build the image, push it to ECR
-  -> deploy-staging   deploy to ECS Fargate (staging)
-  -> manual approval  a person reviews staging
-  -> deploy-prod      deploy to ECS Fargate (prod)
-
-The app stores its thumbs-up counter in DynamoDB.
-```
+![CI/CD pipeline: push to main triggers GitHub Actions (test, build-push, deploy-staging, manual approval, deploy-prod), which assumes a single OIDC IAM role to push a SHA-tagged image to ECR and deploy it to the ECS staging and prod services](static/project1_cicd_pipeline.png)
 
 A push to `main` runs four jobs in sequence: `test` → `build-push` →
 `deploy-staging` → `deploy-prod`, with a required manual review sitting
