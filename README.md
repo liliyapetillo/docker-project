@@ -1,6 +1,6 @@
-# Docker Project
+# ECS CI/CD Pipeline
 
-[![Deploy](https://github.com/liliyapetillo/docker-project/actions/workflows/deploy.yml/badge.svg)](https://github.com/liliyapetillo/docker-project/actions/workflows/deploy.yml)
+[![Deploy](https://github.com/liliyapetillo/ecs-cicd-pipeline/actions/workflows/deploy.yml/badge.svg)](https://github.com/liliyapetillo/ecs-cicd-pipeline/actions/workflows/deploy.yml)
 
 A small Flask app, containerized and deployed to AWS ECS Fargate through a
 gated CI/CD pipeline. The app itself (a personal portfolio page with a
