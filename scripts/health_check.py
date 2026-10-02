@@ -6,9 +6,7 @@ import sys
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-# Same names as the ECS_CLUSTER / ECS_SERVICE_PROD secrets already used in
-# .github/workflows/deploy.yml, so this can plug into that pipeline later
-# without introducing a second source of truth for these names.
+# Read from the same ECS_CLUSTER / ECS_SERVICE_PROD secrets deploy.yml uses.
 CLUSTER = os.getenv("ECS_CLUSTER")
 SERVICE = os.getenv("ECS_SERVICE_PROD")
 

@@ -22,3 +22,11 @@ platform-mismatch error during initial setup.
 Typical fix: if it's an image or config problem, fix and redeploy. If the
 task is simply gone with no clear reason, try Update service, Force new
 deployment, before escalating further.
+
+## myapp-bedrock-tokens-25pct-daily
+The /ask feature used 25% of its daily token budget (7.5M of 30M, ~$0.47) in 24h.
+Normal traffic is a few hundred questions a day, so this usually means a bot.
+Check first: CloudWatch Logs for /ecs/myapp-task, filter `event = "ask"`, and
+look at outcomes and questions. The app hard-stops at 30M tokens/day on its own,
+so no action is required to cap spend; if abuse continues, lower
+DAILY_TOKEN_BUDGET or ASK_LIMIT_PER_WINDOW in app.py and redeploy.

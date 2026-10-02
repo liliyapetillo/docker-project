@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Liliya Petillo</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="card">
+    <picture>
+      <source srcset="/static/headshot.avif" type="image/avif">
+      <img class="avatar" src="/static/headshot.jpg" alt="Liliya Petillo">
+    </picture>
+    <h1>Liliya Petillo</h1>
+    <div class="subtitle">Senior QA engineer moving into cloud and DevOps</div>
+    <div class="location">Staten Island, NY</div>
+
+    <div class="about-heading">About me</div>
+    <div class="summary">
+      <p>
+        I'm Liliya, a QA engineer with 10+ years of experience testing web, iOS, and Android products, and I'm now moving into cloud and DevOps. Over the years I've built automation frameworks, wired tests into CI/CD pipelines, and owned quality on platforms where mistakes are costly, including a state government licensing platform and a healthcare-adjacent ordering portal.
+      </p>
+      <p>
+        The move to cloud felt natural. After enough time working inside pipelines, I wanted to understand what runs underneath them. So I earned my AWS Cloud Practitioner and HashiCorp Terraform Associate certifications, and I've been building ever since: containerized projects with Docker deployed through GitHub Actions, small AWS environment entirely in Terraform, and a serverless CRUD app.
+      </p>
+      <p>
+        What I bring is a tester's habit of asking "what could break here?", comfort working in regulated, security-conscious environments, and a knack for picking up new tools quickly. This site is where I share the projects I build along the way.
+      </p>
+    </div>
+
+    <ul class="certs">
+      <li>AWS Certified Cloud Practitioner (CLF-C02)</li>
+      <li>HashiCorp Certified: Terraform Associate (TA-004)</li>
+      <li>ISTQB CTFL - Certified Tester Foundation Level</li>
+    </ul>
+
+    <div class="about-heading">Ask about my experience</div>
+    <form class="ask-form" id="ask-form">
+      <input type="text" id="ask-input" name="question" maxlength="300" required
+             placeholder="e.g. What testing frameworks has she used?" aria-label="Your question">
+      <button type="submit" id="ask-btn">Ask</button>
+    </form>
+    <div class="ask-answer" id="ask-answer" aria-live="polite" hidden></div>
+
+    <div class="links">
+      <a href="mailto:liliya.petillo@gmail.com">Email</a>&middot;
+      <a href="https://linkedin.com/in/liliya-petillo" target="_blank">LinkedIn</a>&middot;
+      <a href="https://github.com/liliyapetillo/portfolio" target="_blank">GitHub</a>
+    </div>
+
+    <div class="thumbs-form">
+      <button type="button" class="thumbs" id="thumbs-btn" onclick="likeIt()">👍 <span id="count">{{ count }}</span></button>
+    </div>
+
+    <div class="meta" style="color: {{ color }}">Environment: {{ env | upper }} · Commit: {{ version[:7] }} · Container: {{ hostname }}</div>
+  </div>
+  <script>
+    async function likeIt() {
+      const btn = document.getElementById('thumbs-btn');
+      const countEl = document.getElementById('count');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/like', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          countEl.textContent = data.count;
+        }
+      } catch (err) {
+        console.error('Failed to update counter', err);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('ask-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('ask-input');
+      const btn = document.getElementById('ask-btn');
+      const answerEl = document.getElementById('ask-answer');
+      const question = input.value.trim();
+      if (!question) return;
+
+      btn.disabled = true;
+      answerEl.hidden = false;
+      answerEl.classList.remove('error');
+      answerEl.textContent = 'Thinking...';
+      try {
+        const res = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          // textContent, not innerHTML: model output is never treated as markup
+          answerEl.textContent = data.answer;
+        } else {
+          answerEl.classList.add('error');
+          answerEl.textContent = data.error || 'Something went wrong. Please try again.';
+        }
+      } catch (err) {
+        console.error('Failed to ask question', err);
+        answerEl.classList.add('error');
+        answerEl.textContent = 'Something went wrong. Please try again.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
